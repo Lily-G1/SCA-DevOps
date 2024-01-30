@@ -1,0 +1,86 @@
+#!/bin/bash
+# INSTALL NGINX SERVER FROM SOURCE-CODE & RUN DAILY BACKUPS WITH CRON
+
+# Variables
+NGINX_DIR="nginx"
+NGINX_USER="ubuntu"
+BACKUP_SCRIPT="$HOME/nginx-backup.sh"
+BACKUP_DATE=$(date +"%Y%m%d")
+BACKUP_FOLDER="$HOME/nginx_backups"
+SOURCE_PATH="$HOME/nginx/nginx-1.21.0"
+DESTINATION_PATH="${BACKUP_FOLDER}/backup_${BACKUP_DATE}"
+
+# Create dedicated Nginx directory
+mkdir "${NGINX_DIR}"/ && cd "${NGINX_DIR}"
+
+# Install build essentials + cron
+sudo apt-get update
+sudo apt-get install -y build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev cron
+
+# Download Nginx source
+wget http://nginx.org/download/nginx-1.21.0.tar.gz
+
+# Extract the tarball
+tar -zxvf nginx-1.21.0.tar.gz
+
+# Change directory to Nginx source
+cd nginx-
+
+# Run configure
+./configure --with-pcre
+
+# Build & install Nginx
+make && sudo make install
+
+# Create a systemd unit file for Nginx service
+sudo bash -c 'cat > /etc/systemd/system/nginx.service' <<EOF
+[Unit]
+Description=Nginx
+After=network.target
+
+[Service]
+ExecStart=/usr/local/nginx/sbin/nginx
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/nginx/sbin/nginx -s stop
+KillMode=process
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+EOF
+
+# Change Nginx user
+sudo chown -R $NGINX_USER:$NGINX_USER /usr/local/nginx
+
+# Reload systemd
+echo "reloading systemd ..."
+sudo systemctl daemon-reload
+
+# Enable & start Nginx service
+echo "starting nginx ..."
+sudo systemctl enable nginx
+sudo /usr/local/nginx/sbin/nginx
+sudo systemctl start nginx
+
+# Enable & start cron service
+echo "starting cron ..."
+sudo systemctl enable cron
+sudo systemctl start cron
+
+# Set up cron schedule for Nginx daily backup (@11:59pm daily)
+echo "59 23 * * * ${BACKUP_SCRIPT}" | crontab -
+
+# Create script for daily backup of Nginx directory
+cat <<EOF > "${BACKUP_SCRIPT}"
+
+# Create dedicated backup folder in home directory
+mkdir $BACKUP_FOLDER
+
+# Create backup files
+cp -r $SOURCE_PATH $DESTINATION_PATH
+
+EOF
+
+# Make backup script executionable
+chmod u+x "${BACKUP_SCRIPT}"
