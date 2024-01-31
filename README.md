@@ -2,7 +2,7 @@
 ### Documenting tasks assigned by the SheCodeAfrica DevOps Community  
 ### Linux:  
 - Task 1: Bash script that prompts new students to create their accounts with a password that has a minimun of 8 characters  
-- Task 2: Bash Script that installs Nginx from source-code, adds an Nginx user and runs a cron job that does a daily backup of Nginx folder  
+- Task 2: Bash Script that installs Nginx from source-code, adds an Nginx user and runs a cron job that does a daily backup of the Nginx folder  
 
 ### Git:  
 - $ git branch -a >> lists all local & remote branches  
