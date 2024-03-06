@@ -6,7 +6,8 @@
 
 ### Git:  
 - $ git branch -a >> lists all local & remote branches  
-- $ git branch -d 'name of branch' >> delete branch locally
+- $ git branch -d 'name of branch' >> delete local branch  
+- $ git push origin -d 'name of branch' >> delete remote branch  
 - Local branch >> a branch that exists only on a local machine
 - Remote branch >> a branch that exists on a repository that is hosted on a platform such as Github, Gitlab or Bitbucket  
 - Tracking branches >> A tracking branch is when a local branch has a direct relationship with a remote branch. They link what you’re working on locally compared to what’s on the remote repository
